@@ -35,6 +35,13 @@ app.get('/', (req, res) => {
     res.send('VK Bot is running!');
 });
 
+// Тестовый POST маршрут
+app.post('/test', (req, res) => {
+    console.log('Тестовый POST запрос');
+    console.log('Body:', req.body);
+    res.send('Test OK');
+});
+
 // Обработка всех GET запросов
 app.get('*', (req, res) => {
     console.log('GET запрос на:', req.path);
@@ -43,53 +50,58 @@ app.get('*', (req, res) => {
 
 // Обработка подтверждения сервера
 app.post('/callback/xE4sA', async (req, res) => {
-    console.log('Получен POST запрос на /callback/xE4sA');
-    console.log('Headers:', req.headers);
-    console.log('Body:', req.body);
+    try {
+        console.log('Получен POST запрос на /callback/xE4sA');
+        console.log('Headers:', req.headers);
+        console.log('Body:', JSON.stringify(req.body, null, 2));
 
-    const { type, group_id } = req.body;
+        const { type, group_id } = req.body;
 
-    // Проверка секретного ключа
-    if (req.headers['x-vk-secret'] !== SECRET_KEY) {
-        console.log('Неверный секретный ключ');
-        console.log('Получен:', req.headers['x-vk-secret']);
-        console.log('Ожидался:', SECRET_KEY);
-        return res.status(403).send('Access denied');
-    }
-
-    // Обработка подтверждения сервера
-    if (type === 'confirmation' && group_id === GROUP_ID) {
-        console.log('Отправляем токен подтверждения:', CONFIRMATION_TOKEN);
-        return res.send(CONFIRMATION_TOKEN);
-    }
-
-    // Обработка новых сообщений
-    if (type === 'message_new') {
-        const message = req.body.object.message;
-        const text = message.text ? message.text.toLowerCase() : '';
-        const userId = message.from_id;
-
-        console.log('Получено новое сообщение:', text);
-
-        // Логика ответов на сообщения
-        if (text === '/start') {
-            await sendMessage(userId, 'Привет! Я бот для личной страницы. Чем могу помочь?');
-        } else if (text === '/время') {
-            const now = new Date();
-            await sendMessage(userId, `Текущее время: ${now.toLocaleTimeString()}`);
-        } else if (text.includes('привет')) {
-            await sendMessage(userId, 'Привет! Рад тебя видеть!');
-        } else if (text.includes('как дела')) {
-            await sendMessage(userId, 'Всё отлично! Готов помогать!');
-        } else if (text.includes('помощь')) {
-            await sendMessage(userId, 'Я могу:\n- Отвечать на приветствия\n- Поддерживать простой диалог\n- Показывать текущее время (/время)\n- Помогать с базовыми командами');
-        } else {
-            await sendMessage(userId, 'Извини, я пока не знаю, как ответить на это сообщение. Попробуй написать "помощь" для списка команд.');
+        // Проверка секретного ключа
+        if (req.headers['x-vk-secret'] !== SECRET_KEY) {
+            console.log('Неверный секретный ключ');
+            console.log('Получен:', req.headers['x-vk-secret']);
+            console.log('Ожидался:', SECRET_KEY);
+            return res.status(403).send('Access denied');
         }
-    }
 
-    console.log('Отправляем ответ "ok"');
-    res.send('ok');
+        // Обработка подтверждения сервера
+        if (type === 'confirmation' && group_id === GROUP_ID) {
+            console.log('Отправляем токен подтверждения:', CONFIRMATION_TOKEN);
+            return res.send(CONFIRMATION_TOKEN);
+        }
+
+        // Обработка новых сообщений
+        if (type === 'message_new') {
+            const message = req.body.object.message;
+            const text = message.text ? message.text.toLowerCase() : '';
+            const userId = message.from_id;
+
+            console.log('Получено новое сообщение:', text);
+
+            // Логика ответов на сообщения
+            if (text === '/start') {
+                await sendMessage(userId, 'Привет! Я бот для личной страницы. Чем могу помочь?');
+            } else if (text === '/время') {
+                const now = new Date();
+                await sendMessage(userId, `Текущее время: ${now.toLocaleTimeString()}`);
+            } else if (text.includes('привет')) {
+                await sendMessage(userId, 'Привет! Рад тебя видеть!');
+            } else if (text.includes('как дела')) {
+                await sendMessage(userId, 'Всё отлично! Готов помогать!');
+            } else if (text.includes('помощь')) {
+                await sendMessage(userId, 'Я могу:\n- Отвечать на приветствия\n- Поддерживать простой диалог\n- Показывать текущее время (/время)\n- Помогать с базовыми командами');
+            } else {
+                await sendMessage(userId, 'Извини, я пока не знаю, как ответить на это сообщение. Попробуй написать "помощь" для списка команд.');
+            }
+        }
+
+        console.log('Отправляем ответ "ok"');
+        res.send('ok');
+    } catch (error) {
+        console.error('Ошибка при обработке запроса:', error);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
 // Запуск сервера
