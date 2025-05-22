@@ -4,7 +4,13 @@ const bodyParser = require('body-parser');
 const axios = require('axios');
 
 const app = express();
-app.use(bodyParser.json());
+
+// Настройка body-parser
+app.use(bodyParser.json({
+    verify: (req, res, buf) => {
+        req.rawBody = buf.toString();
+    }
+}));
 
 // Константы из настроек сервера
 const GROUP_ID = 230518773;
@@ -38,7 +44,9 @@ app.get('/', (req, res) => {
 // Тестовый POST маршрут
 app.post('/test', (req, res) => {
     console.log('Тестовый POST запрос');
-    console.log('Body:', req.body);
+    console.log('Headers:', JSON.stringify(req.headers, null, 2));
+    console.log('Raw Body:', req.rawBody);
+    console.log('Parsed Body:', JSON.stringify(req.body, null, 2));
     res.send('Test OK');
 });
 
@@ -53,9 +61,22 @@ app.post('/callback/xE4sA', async (req, res) => {
     try {
         console.log('Получен POST запрос на /callback/xE4sA');
         console.log('Headers:', JSON.stringify(req.headers, null, 2));
-        console.log('Body:', JSON.stringify(req.body, null, 2));
+        console.log('Raw Body:', req.rawBody);
+        console.log('Parsed Body:', JSON.stringify(req.body, null, 2));
+
+        // Проверка наличия тела запроса
+        if (!req.body) {
+            console.error('Тело запроса отсутствует');
+            return res.status(400).send('Bad Request');
+        }
 
         const { type, group_id } = req.body;
+
+        // Проверка наличия обязательных полей
+        if (!type || !group_id) {
+            console.error('Отсутствуют обязательные поля:', { type, group_id });
+            return res.status(400).send('Bad Request');
+        }
 
         // Проверка секретного ключа
         if (req.headers['x-vk-secret'] !== SECRET_KEY) {
@@ -108,4 +129,9 @@ app.post('/callback/xE4sA', async (req, res) => {
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log(`Сервер запущен на порту ${PORT}`);
+    console.log('Константы:');
+    console.log('GROUP_ID:', GROUP_ID);
+    console.log('CONFIRMATION_TOKEN:', CONFIRMATION_TOKEN);
+    console.log('SECRET_KEY:', SECRET_KEY);
+    console.log('VK_TOKEN:', VK_TOKEN ? 'Установлен' : 'Не установлен');
 }); 
