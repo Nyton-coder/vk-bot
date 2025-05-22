@@ -31,20 +31,29 @@ async function sendMessage(userId, message) {
 
 // Корневой маршрут
 app.get('/', (req, res) => {
+    console.log('GET запрос на корневой маршрут');
     res.send('VK Bot is running!');
 });
 
 // Обработка подтверждения сервера
 app.post('/callback/xE4sA', async (req, res) => {
+    console.log('Получен POST запрос на /callback/xE4sA');
+    console.log('Headers:', req.headers);
+    console.log('Body:', req.body);
+
     const { type, group_id } = req.body;
 
     // Проверка секретного ключа
     if (req.headers['x-vk-secret'] !== SECRET_KEY) {
+        console.log('Неверный секретный ключ');
+        console.log('Получен:', req.headers['x-vk-secret']);
+        console.log('Ожидался:', SECRET_KEY);
         return res.status(403).send('Access denied');
     }
 
     // Обработка подтверждения сервера
     if (type === 'confirmation' && group_id === GROUP_ID) {
+        console.log('Отправляем токен подтверждения:', CONFIRMATION_TOKEN);
         return res.send(CONFIRMATION_TOKEN);
     }
 
@@ -73,6 +82,7 @@ app.post('/callback/xE4sA', async (req, res) => {
         }
     }
 
+    console.log('Отправляем ответ "ok"');
     res.send('ok');
 });
 
