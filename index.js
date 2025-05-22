@@ -35,6 +35,12 @@ app.get('/', (req, res) => {
     res.send('VK Bot is running!');
 });
 
+// Обработка всех GET запросов
+app.get('*', (req, res) => {
+    console.log('GET запрос на:', req.path);
+    res.send('VK Bot is running!');
+});
+
 // Обработка подтверждения сервера
 app.post('/callback/xE4sA', async (req, res) => {
     console.log('Получен POST запрос на /callback/xE4sA');
@@ -87,7 +93,7 @@ app.post('/callback/xE4sA', async (req, res) => {
 });
 
 // Запуск сервера
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log(`Сервер запущен на порту ${PORT}`);
 }); 
