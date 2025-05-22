@@ -52,7 +52,7 @@ app.get('*', (req, res) => {
 app.post('/callback/xE4sA', async (req, res) => {
     try {
         console.log('Получен POST запрос на /callback/xE4sA');
-        console.log('Headers:', req.headers);
+        console.log('Headers:', JSON.stringify(req.headers, null, 2));
         console.log('Body:', JSON.stringify(req.body, null, 2));
 
         const { type, group_id } = req.body;
@@ -68,7 +68,7 @@ app.post('/callback/xE4sA', async (req, res) => {
         // Обработка подтверждения сервера
         if (type === 'confirmation' && group_id === GROUP_ID) {
             console.log('Отправляем токен подтверждения:', CONFIRMATION_TOKEN);
-            return res.send(CONFIRMATION_TOKEN);
+            return res.status(200).send(CONFIRMATION_TOKEN);
         }
 
         // Обработка новых сообщений
@@ -97,7 +97,7 @@ app.post('/callback/xE4sA', async (req, res) => {
         }
 
         console.log('Отправляем ответ "ok"');
-        res.send('ok');
+        res.status(200).send('ok');
     } catch (error) {
         console.error('Ошибка при обработке запроса:', error);
         res.status(500).send('Internal Server Error');
