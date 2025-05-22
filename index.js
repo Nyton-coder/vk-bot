@@ -29,6 +29,11 @@ async function sendMessage(userId, message) {
     }
 }
 
+// Корневой маршрут
+app.get('/', (req, res) => {
+    res.send('VK Bot is running!');
+});
+
 // Обработка подтверждения сервера
 app.post('/callback/xE4sA', async (req, res) => {
     const { type, group_id } = req.body;
